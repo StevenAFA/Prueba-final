@@ -382,11 +382,11 @@ namespace Prueba_final.Views
 
             if (EsFormatoConexionSql(connectionString) || EsFormatoConexionWindowsAuth(connectionString) || EsFormatoConexionDesdeConfig(connectionString))
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionSuccess", "alert('La cadena de conexión es válida.');", true);      
+                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionSuccess", "alert('La cadena de conexión funciona correctamente');", true);      
             }
             else
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión no es válida.');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión no funciona correctamente.');", true);
             }
         }
 
