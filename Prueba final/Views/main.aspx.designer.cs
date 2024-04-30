@@ -96,39 +96,30 @@ namespace Prueba_final.Views
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl resultadoLabel;
 
         /// <summary>
-        /// Control lblConnectionString.
+        /// Control txtServer.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblConnectionString;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText txtServer;
 
         /// <summary>
-        /// Control txtConnectionString.
+        /// Control txtName.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtConnectionString;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText txtName;
 
         /// <summary>
-        /// Control btnTestConnection.
+        /// Control btnGetConnection.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnTestConnection;
-
-        /// <summary>
-        /// Control lblConnectionStatus.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblConnectionStatus;
+        protected global::System.Web.UI.WebControls.Button btnGetConnection;
     }
 }

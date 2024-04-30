@@ -5,7 +5,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Text.RegularExpressions;
-
+using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace Prueba_final.Views
 {
@@ -158,280 +159,67 @@ namespace Prueba_final.Views
             return !string.IsNullOrWhiteSpace(camposTexto) && camposTexto.Contains(",");
         }
 
-        protected void VerificarQuery_Click(object sender, EventArgs e)
+        protected void verificarButton_Click(object sender, EventArgs e)
         {
-            string sqlQuery = sqlQueryTextBox.Text.Trim().ToUpper();
+            string query = sqlQueryTextBox.Text;
+            string resultado = VeriQue(query);
+            resultadoLabel.InnerText = resultado;
 
-            string alertScript = "";
-
-            if (sqlQuery.StartsWith("CREATE TABLE"))
-            {
-                if (EsQueryCreateTableValido(sqlQuery))
-                {
-                    alertScript = "alert('El Query es una sentencia CREATE TABLE y está bien escrita.');";
-                }
-                else
-                {
-                    alertScript = "alert('El Query CREATE TABLE no es válido. Verifique la sintaxis y asegúrese de que esté completo.');";
-                }
-            }
-            else if (sqlQuery.StartsWith("UPDATE"))
-            {
-                if (EsQueryUpdateValido(sqlQuery))
-                {
-                    alertScript = "alert('El Query es una sentencia UPDATE y está bien escrita.');";
-                }
-                else
-                {
-                    alertScript = "alert('El Query UPDATE no es válido. Verifique la sintaxis y asegúrese de que esté completo.');";
-                }
-            }
-            else if (sqlQuery.StartsWith("INSERT INTO"))
-            {
-                if (EsQueryInsertValido(sqlQuery))
-                {
-                    alertScript = "alert('El Query es una sentencia INSERT INTO y está bien escrita.');";
-                }
-                else
-                {
-                    alertScript = "alert('El Query INSERT INTO no es válido. Verifique la sintaxis y asegúrese de que esté completo.');";
-                }
-            }
-            else if (sqlQuery.StartsWith("DROP TABLE"))
-            {
-                if (EsQueryDropTableValido(sqlQuery))
-                {
-                    alertScript = "alert('El Query es una sentencia DROP TABLE y está bien escrita.');";
-                }
-                else
-                {
-                    alertScript = "alert('El Query DROP TABLE no es válido. Verifique la sintaxis y asegúrese de que esté completo.');";
-                }
-            }
-            else
-            {
-                alertScript = "alert('El Query no corresponde a ninguna sentencia SQL permitida o está mal escrito.');";
-            }
-
-            // Mostrar alerta
-            ScriptManager.RegisterStartupScript(this, GetType(), "QueryVerification", alertScript, true);
+            // Script para mostrar el mensaje en un alert
+            string script = "alert('" + resultado + "');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "QueryVerificationScript", script, true);
         }
 
-        private bool EsQueryCreateTableValido(string sqlQuery)
+        public string VeriQue(string query)
         {
-            // Verificar que el query contenga la frase "CREATE TABLE"
-            int createTableIndex = sqlQuery.IndexOf("CREATE TABLE", StringComparison.OrdinalIgnoreCase);
-            if (createTableIndex == -1)
+            string connectionString = "Data Source=LAPTOP-G02OT5LT;Initial Catalog=Create tables;Integrated Security=True";
+
+            try
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "CreateTableInvalid", "alert('El Query no contiene la frase \"CREATE TABLE\".');", true);
-                return false;
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.ExecuteNonQuery();
+                        return "El Query SQL se ejecutó correctamente.";
+                    }
+                }
             }
-
-            // Obtener la parte del query que sigue a "CREATE TABLE"
-            string remainingQuery = sqlQuery.Substring(createTableIndex + "CREATE TABLE".Length).Trim();
-
-            // Verificar si hay un paréntesis de apertura después de "CREATE TABLE"
-            int openParenIndex = remainingQuery.IndexOf('(');
-            if (openParenIndex == -1)
+            catch (Exception ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "CreateTableInvalid", "alert('El Query CREATE TABLE no contiene un paréntesis de apertura después de la frase \"CREATE TABLE\".');", true);
-                return false;
-            }
-
-            // Obtener el nombre de la tabla
-            string tableName = remainingQuery.Substring(0, openParenIndex).Trim();
-            if (string.IsNullOrEmpty(tableName))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "CreateTableInvalid", "alert('El nombre de la tabla está vacío después de la frase \"CREATE TABLE\".');", true);
-                return false;
-            }
-
-            // Verificar si hay un paréntesis de cierre después del nombre de la tabla
-            int closeParenIndex = remainingQuery.IndexOf(')', openParenIndex);
-            if (closeParenIndex == -1)
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "CreateTableInvalid", "alert('El Query CREATE TABLE no contiene un paréntesis de cierre después del nombre de la tabla.');", true);
-                return false;
-            }
-
-            // Obtener la parte del query que contiene las columnas
-            string columnsPart = remainingQuery.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1).Trim();
-
-            // Verificar si las columnas están vacías
-            if (string.IsNullOrEmpty(columnsPart))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "CreateTableInvalid", "alert('El Query CREATE TABLE no contiene ninguna columna después del nombre de la tabla.');", true);
-                return false;
-            }
-
-            return true;
-        }
-
-
-        private bool EsQueryUpdateValido(string sqlQuery)
-        {
-            // Verificar que el query comience con "UPDATE"
-            if (!sqlQuery.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "UpdateQueryInvalid", "alert('El Query no comienza con la frase \"UPDATE\".');", true);
-                return false;
-            }
-
-            // Utilizar expresión regular para buscar la cláusula SET
-            Regex setRegex = new Regex(@"\bSET\b", RegexOptions.IgnoreCase);
-            if (!setRegex.IsMatch(sqlQuery))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "UpdateQueryInvalid", "alert('El Query UPDATE no contiene la frase \"SET\" después del nombre de la tabla.');", true);
-                return false;
-            }
-
-            // Utilizar expresión regular para buscar la cláusula WHERE
-            Regex whereRegex = new Regex(@"\bWHERE\b", RegexOptions.IgnoreCase);
-            if (!whereRegex.IsMatch(sqlQuery))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "UpdateQueryInvalid", "alert('El Query UPDATE no contiene la cláusula \"WHERE\".');", true);
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool EsQueryInsertValido(string sqlQuery)
-        {
-            // Verificar que el query comience con "INSERT INTO"
-            if (!sqlQuery.StartsWith("INSERT INTO", StringComparison.OrdinalIgnoreCase))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "InsertQueryInvalid", "alert('El Query no comienza con la frase \"INSERT INTO\".');", true);
-                return false;
-            }
-
-            // Obtener la parte del query que sigue a "INSERT INTO"
-            int insertIndex = sqlQuery.IndexOf("INSERT INTO", StringComparison.OrdinalIgnoreCase) + "INSERT INTO".Length;
-            string remainingQuery = sqlQuery.Substring(insertIndex).Trim();
-
-            // Buscar el índice de la lista de columnas (entre paréntesis)
-            int openParenIndex = remainingQuery.IndexOf('(');
-            int closeParenIndex = remainingQuery.IndexOf(')');
-            if (openParenIndex == -1 || closeParenIndex == -1 || closeParenIndex <= openParenIndex)
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "InsertQueryInvalid", "alert('El Query INSERT INTO no contiene una lista de columnas válida.');", true);
-                return false;
-            }
-            // Verificar que el siguiente token después de la lista de columnas sea la palabra clave "VALUES"
-            int valuesIndex = remainingQuery.IndexOf("VALUES", StringComparison.OrdinalIgnoreCase);
-            if (valuesIndex == -1)
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "InsertQueryInvalid", "alert('El Query INSERT INTO no contiene la palabra clave \"VALUES\" después de la lista de columnas.');", true);
-                return false;
-            }
-
-            // Verificar que hay datos después de la palabra clave "VALUES"
-            string valuesPart = remainingQuery.Substring(valuesIndex + "VALUES".Length).Trim();
-            if (string.IsNullOrEmpty(valuesPart))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "InsertQueryInvalid", "alert('El Query INSERT INTO no contiene valores después de la palabra clave \"VALUES\".');", true);
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool EsQueryDropTableValido(string sqlQuery)
-        {
-            // Verificar que el query comience con "DROP TABLE"
-            if (!sqlQuery.StartsWith("DROP TABLE", StringComparison.OrdinalIgnoreCase))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "DropTableQueryInvalid", "alert('El Query no comienza con la frase \"DROP TABLE\".');", true);
-                return false;
-            }
-
-            // Obtener la parte del query que sigue a "DROP TABLE"
-            int dropIndex = sqlQuery.IndexOf("DROP TABLE", StringComparison.OrdinalIgnoreCase) + "DROP TABLE".Length;
-            string remainingQuery = sqlQuery.Substring(dropIndex).Trim();
-
-            // Verificar si hay un nombre de tabla después de "DROP TABLE"
-            if (string.IsNullOrWhiteSpace(remainingQuery))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "DropTableQueryInvalid", "alert('El Query DROP TABLE no especifica un nombre de tabla válido.');", true);
-                return false;
-            }
-
-            // Verificar si el nombre de la tabla contiene caracteres válidos
-            if (remainingQuery.IndexOfAny(new char[] { ' ', ';' }) == -1)
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "DropTableQueryInvalid", "alert('El Query DROP TABLE no especifica un nombre de tabla válido.');", true);
-                return false;
-            }
-
-            // Obtener el nombre de la tabla
-            int spaceIndex = remainingQuery.IndexOf(' ');
-            string tableName = spaceIndex != -1 ? remainingQuery.Substring(0, spaceIndex).Trim() : remainingQuery;
-
-            // Verificar si hay datos después del nombre de la tabla
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "DropTableQueryInvalid", "alert('El Query DROP TABLE no especifica un nombre de tabla válido.');", true);
-                return false;
-            }
-
-            return true;
-        }
-        protected void btnTestConnection_Click(object sender, EventArgs e)
-        {
-            string connectionString = txtConnectionString.Text;
-
-            if (EsFormatoConexionSql(connectionString) || EsFormatoConexionWindowsAuth(connectionString) || EsFormatoConexionDesdeConfig(connectionString))
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionSuccess", "alert('La cadena de conexión funciona correctamente');", true);      
-            }
-            else
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión no funciona correctamente.');", true);
+                return "Error al ejecutar el Query SQL: " + ex.Message;
             }
         }
-
-        private bool EsFormatoConexionSql(string connectionString)
+        protected void btnGetConnection_ServerClick(object sender, EventArgs e)
         {
-            Regex regex = new Regex(@"Data Source=.+;Initial Catalog=.+;User ID=.+;Password=.+;");
-            if (regex.IsMatch(connectionString))
+            string database = txtName.Value;
+            string server = txtServer.Value;
+            if (string.IsNullOrEmpty(database) || string.IsNullOrEmpty(server))
             {
-                return true;
+                // Si uno de los campos está vacío, mostrar un mensaje de error
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('Por favor, ingresa el nombre de la base de datos y el servidor.')", true);
+                return; // Salir del método
             }
-            else
+            try
             {
-                // Mostrar mensaje de error detallado
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión SQL no es válida. Verifique que contenga Data Source, Initial Catalog, User ID y Password.');", true);
-                return false;
-            }
-        }
+                // Construir la cadena de conexión utilizando los valores obtenidos del formulario
+                string connectionString = $"Data Source={server};Initial Catalog={database};Integrated Security=True";
 
-        private bool EsFormatoConexionWindowsAuth(string connectionString)
-        {
-            Regex regex = new Regex(@"Data Source=.+;Initial Catalog=.+;Integrated Security=True;");
-            if (regex.IsMatch(connectionString))
-            {
-                return true;
-            }
-            else
-            {
-                // Mostrar mensaje de error detallado
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión con autenticación de Windows no es válida. Verifique que contenga Data Source, Initial Catalog e Integrated Security=True.');", true);
-                return false;
-            }
-        }
+                // Intentar abrir la conexión
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
 
-        private bool EsFormatoConexionDesdeConfig(string connectionString)
-        {
-            Regex regex = new Regex(@"<connectionStrings>\s*<add name=.+connectionString=.+providerName=.+/>\s*</connectionStrings>");
-            if (regex.IsMatch(connectionString))
-            {
-                return true;
+                    // Si la conexión se abre correctamente, significa que la base de datos y el servidor existen
+                    ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('¡La conexión fue exitosa!')", true);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Mostrar mensaje de error detallado
-                ScriptManager.RegisterStartupScript(this, GetType(), "ConnectionError", "alert('La cadena de conexión desde la configuración no es válida. Verifique el formato y los atributos name, connectionString y providerName.');", true);
-                return false;
+                // Si ocurre alguna excepción, significa que la base de datos o el servidor no existen o hay un error de conexión
+                ScriptManager.RegisterClientScriptBlock(this, this.GetType(), "alertMessage", "alert('¡Tu nombre de servidor o tu nombre de base de datos están mal escritos o no existen! Por favor, verifica e intenta de nuevo.')", true);
             }
         }
     }

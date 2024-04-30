@@ -80,27 +80,28 @@
 
         <div>
             <h2>Mis Tablas</h2>
+            <h4>Debes primero crear tablas para poder ver tus tablas</h4>
             <asp:ListBox ID="ListBoxTables" runat="server" Rows="5"></asp:ListBox>
             <br />
             <asp:Button ID="ButtonDelete" runat="server" Text="Eliminar Tabla Seleccionada" OnClick="ButtonDelete_Click" CssClass="btn btn-danger" />
         </div>
         <div class="container">
             <h2>Verificador de Query SQL</h2>
-            <label for="sqlQuery">Ingrese el Query SQL:</label><br />
+            <label for="sqlQuery">Digite el Query a verificar</label><br />
             <asp:TextBox ID="sqlQueryTextBox" runat="server" TextMode="MultiLine" Rows="4" Columns="50"></asp:TextBox><br />
-            <asp:Button ID="verificarButton" runat="server" Text="Verificar Query" OnClick="VerificarQuery_Click" CssClass="btn btn-primary" />
+            <asp:Button ID="verificarButton" runat="server" Text="Verificar Query" OnClick="verificarButton_Click" CssClass="btn btn-primary" />
             <div class="result" id="resultadoLabel" runat="server"></div>
         </div>
-        <div style="max-width: 800px; margin: 20px auto; padding: 20px; background-color: rgba(255, 255, 255, 0.8); border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <h2 style="text-align: center;">Verificación de Conexión</h2>
-            <asp:Label ID="lblConnectionString" runat="server" AssociatedControlID="txtConnectionString" Text="Ingrese la cadena de conexión:" />
+
+        <div class="container">
+            <h2>Verificador Cadena de Conexion</h2>
+            <label for="txtServer">Nombre del Servidor:</label>
+            <input type="text" id="txtServer" runat="server" class="form-control" />
             <br />
-            <asp:TextBox ID="txtConnectionString" runat="server" Style="width: 100%; margin-bottom: 10px;" />
+            <label for="txtName">Nombre de la Base de Datos:</label>
+            <input type="text" id="txtName" runat="server" class="form-control" />
             <br />
-            <asp:Button ID="btnTestConnection" runat="server" Text="Verificar Conexión" OnClick="btnTestConnection_Click" CssClass="btn btn-primary" />
-            <div class="result" style="text-align: center; font-weight: bold; margin-top: 20px;">
-                <asp:Label ID="lblConnectionStatus" runat="server" />
-            </div>
+            <asp:Button ID="btnGetConnection" runat="server" Text="Obtener Conexión" OnClick="btnGetConnection_ServerClick" CssClass="btn btn-primary" />
         </div>
     </form>
     <!-- Bootstrap JS -->
